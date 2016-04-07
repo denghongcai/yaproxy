@@ -168,6 +168,11 @@ func (s *Server) handleConnect(ctx context.Context, conn conn, req *Request) err
 	}
 
 	dial := s.config.Dial
+	if dial == nil {
+		dial = func(ctx context.Context, net_, addr string) (net.Conn, error) {
+			return net.Dial(net_, addr)
+		}
+	}
 	target, err := dial(ctx, "tcp", addr)
 	if err != nil {
 		msg := err.Error()
