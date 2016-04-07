@@ -1,0 +1,21 @@
+language: go
+
+sudo: false
+
+os:
+  - linux
+  - osx
+
+go:
+  - 1.5
+  - tip
+  - release
+
+install:
+ - go get -t ./...
+
+script:
+ - go vet ./...
+ - go test -v cpu=2 ./..
+ - go test -v -cpu=1,2,4 -short -race ./...
+
