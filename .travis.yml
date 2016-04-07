@@ -16,5 +16,5 @@ install:
 
 script:
  - go vet ./...
- - go test -v cpu=2 ./..
+ - go test -v ./...
 
