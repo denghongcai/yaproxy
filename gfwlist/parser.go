@@ -32,7 +32,7 @@ func (this *GFWListParser) LoadGFWList(code string) {
 			this.rules = append(this.rules, regexp.MustCompile(`.+://`+rawRule[2:]))
 		}
 		if strings.HasPrefix(rawRule, ".") {
-			this.rules = append(this.rules, regexp.MustCompile(`.+`+rawRule+`.+`))
+			this.rules = append(this.rules, regexp.MustCompile(`.+`+rawRule))
 		}
 	}
 }
