@@ -1,24 +1,26 @@
 language: go
 sudo: false
-os:
-- linux
-- osx
 go:
-- 1.5
+- 1.6
 - tip
+env:
+- "PATH=/home/travis/gopath/bin:$PATH"
+before_install:
+- go get github.com/mitchellh/gox
 install:
 - go get -t ./...
 script:
 - go vet ./...
 - go test -v ./...
-after_success:
-- go build
+before_deploy:
+- gox -output "dists/{{.OS}}_{{.Arch}}_{{.Dir}}"
 deploy:
   skip_cleanup: true
   provider: releases
   api_key:
     secure: Nqo0rCK1X01cLZYlUFvYJaR3sh1eYvQi52ogdiZkUYScU8hr4KTZ3JXSNQ+ZOMTCWPAr8PQNZdHT/ZawF7r+4rnP5hm3t8YDJcqRko9pmYKHojVLEYrFpjEKwJ+9Tp9mCDiva6V4PPG+zz5ygw7/BQCUYOtTYDj+LITkf0snENCO+lYQY0LxFWLa9FNv7PCepPdQCBJciDzl0HTsp4puIucgCWl0SXE5vi9iI1Gjdtmx4zw1mQLqUkhXWGmKCRDkNd0NXHpqC3UBvMFNZbIcq+Ycvjjy3pFk0DrLq3xFRbp5wZrxNYz8YYAR3yn6A2wb/RUeTHiWp2UCLnTBaZIIdm4xOngCC+rx/RSTgJzQkPjdwn2e8UUrNfyapUKiyiZ8urjgBmEooMjmO7NrsRCZiETBHGWzcag96VQlu0YAcVJcbp5kuUJnqU5ns9OuhD/rqC6oGndaELEWryAPodQRzeikvcmN4DDKQFsqJqXOw/pH7DFd9S9c6m2NmBOyIhCwayoREuv1lEUnwd/bnq9ver9C6jAYCGHTpiubyKK+HRFPJWtMPLoAlahXURO7k1LSbxTiDzN0qriL51v6hWwnirY3zY5WwvYrHFlQ0Xb0FCSaqaKx40/nr8/46Y5fXmj+SJ7sM2NxXyAonxzD1GOoEbaoP4iKgM57erdd8VbzX/I=
-  file: yaproxy
+  file: "dists/*_yaproxy"
+  file_glob: true
   on:
     tags: true
     repo: denghongcai/yaproxy
