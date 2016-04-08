@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/denghongcai/yaproxy/cache"
+	"github.com/denghongcai/yaproxy/util"
 	"github.com/robertkrimen/otto"
 )
 
@@ -26,12 +27,7 @@ func (this *PacParser) LoadPac(code string) {
 }
 
 func (this *PacParser) NeedProxy(host string, port int) bool {
-	url := "tcp://" + host
-	if port == 80 {
-		url = "http://" + host
-	} else if port == 443 {
-		url = "https://" + host
-	}
+	url := util.BuildURL(host, port)
 	params := fmt.Sprintf("FindProxyForURL(\"%s\", \"%s\")", url, host)
 	if value, exists := cache.TestURL(url); exists {
 		return value

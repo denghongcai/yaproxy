@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/denghongcai/yaproxy/pac"
 	"github.com/denghongcai/yaproxy/shadowsocks"
 	"github.com/denghongcai/yaproxy/socks5"
+	"github.com/denghongcai/yaproxy/util"
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
@@ -31,7 +33,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.2.0"
+	app.Version = "0.2.1"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",
@@ -96,13 +98,23 @@ func main() {
 			}
 
 			return func(ctx context.Context, network, addr string) (net.Conn, error) {
-				host, _, _ := net.SplitHostPort(addr)
+				host, portString, _ := net.SplitHostPort(addr)
+				port, _ := strconv.Atoi(portString)
+				url := util.BuildURL(host, port)
 				if net.ParseIP(host) == nil {
-					return dialer.Dial(network, addr)
+					target, err := dialer.Dial(network, addr)
+					if err == nil {
+						cache.AddURL(url, true)
+					}
+					return target, err
 				}
 				target, err := net.DialTimeout(network, addr, time.Second*time.Duration(timeout))
 				if err != nil {
-					return dialer.Dial(network, addr)
+					target, err := dialer.Dial(network, addr)
+					if err == nil {
+						cache.AddURL(url, true)
+					}
+					return target, err
 				} else {
 					return target, err
 				}
