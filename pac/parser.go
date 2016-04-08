@@ -27,6 +27,10 @@ func (this *PacParser) LoadPac(code string) {
 }
 
 func (this *PacParser) NeedProxy(host string, port int) bool {
+	if this.vm == nil {
+		return true // for short out
+	}
+
 	url := util.BuildURL(host, port)
 	params := fmt.Sprintf("FindProxyForURL(\"%s\", \"%s\")", url, host)
 	if value, exists := cache.TestURL(url); exists {

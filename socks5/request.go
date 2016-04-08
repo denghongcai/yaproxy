@@ -6,6 +6,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/denghongcai/yaproxy/gfwlist"
 	"github.com/denghongcai/yaproxy/pac"
 
 	"golang.org/x/net/context"
@@ -162,7 +163,7 @@ func (s *Server) handleConnect(ctx context.Context, conn conn, req *Request) err
 	// Attempt to connect
 	addr := (&net.TCPAddr{IP: req.realDestAddr.IP, Port: req.realDestAddr.Port}).String()
 	if req.DestAddr.FQDN != "" {
-		if pac.Parser.NeedProxy(req.DestAddr.FQDN, req.realDestAddr.Port) {
+		if gfwlist.Parser.NeedProxy(req.DestAddr.FQDN, req.realDestAddr.Port) || pac.Parser.NeedProxy(req.DestAddr.FQDN, req.realDestAddr.Port) {
 			addr = fmt.Sprintf("%s:%d", req.DestAddr.FQDN, req.realDestAddr.Port)
 		}
 	}

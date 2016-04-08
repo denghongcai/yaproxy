@@ -16,6 +16,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/denghongcai/yaproxy/cache"
+	"github.com/denghongcai/yaproxy/gfwlist"
 	"github.com/denghongcai/yaproxy/pac"
 	"github.com/denghongcai/yaproxy/shadowsocks"
 	"github.com/denghongcai/yaproxy/socks5"
@@ -27,13 +28,14 @@ var socks5Addr string
 var listenAddr string
 var timeout int
 var pacFile string
+var gfwListFile string
 var ssConfigFile string
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.2.1"
+	app.Version = "0.3.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",
@@ -54,6 +56,12 @@ func main() {
 			Destination: &pacFile,
 		},
 		cli.StringFlag{
+			Name:        "gfwlist, gfw",
+			Value:       "gfwlist.txt",
+			Usage:       "specify gfwlist file, default to ./gfwlist.txt",
+			Destination: &gfwListFile,
+		},
+		cli.StringFlag{
 			Name:        "shadowsocks-config, ssc",
 			Value:       "ss-config.json",
 			Usage:       "specify shadowsocks config, default to ./ss-config.json",
@@ -67,12 +75,23 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		pacCode, err := ioutil.ReadFile(pacFile)
-		if err != nil {
-			panic(err)
+		exists, err := ss.IsFileExists(pacFile)
+		if exists && err == nil {
+			pacCode, err := ioutil.ReadFile(pacFile)
+			if err != nil {
+				panic(err)
+			}
+			pac.Parser.LoadPac(string(pacCode))
 		}
 
-		pac.Parser.LoadPac(string(pacCode))
+		exists, err = ss.IsFileExists(gfwListFile)
+		if exists && err == nil {
+			gfwListCode, err := ioutil.ReadFile(gfwListFile)
+			if err != nil {
+				panic(err)
+			}
+			gfwlist.Parser.LoadGFWList(string(gfwListCode))
+		}
 
 		f, _ := os.OpenFile("cache.yap", os.O_RDWR|os.O_CREATE, 0644)
 		cache.RecoverFromReader(f)
