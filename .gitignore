@@ -21,6 +21,7 @@ _testmain.go
 
 *.exe
 *.test
+ss-config.json
 yaproxy
 cache.yap
 

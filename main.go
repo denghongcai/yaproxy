@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -9,25 +8,30 @@ import (
 	"syscall"
 	"time"
 
+	"gogs.digif.net/mask/modules/log"
+
 	"golang.org/x/net/context"
 	"golang.org/x/net/proxy"
 
 	"github.com/codegangsta/cli"
 	"github.com/denghongcai/yaproxy/cache"
 	"github.com/denghongcai/yaproxy/pac"
+	"github.com/denghongcai/yaproxy/shadowsocks"
 	"github.com/denghongcai/yaproxy/socks5"
+	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
 var socks5Addr string
 var listenAddr string
 var timeout int
 var pacFile string
+var ssConfigFile string
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.1.2"
+	app.Version = "0.2.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",
@@ -46,6 +50,12 @@ func main() {
 			Value:       "proxy.pac",
 			Usage:       "specify pac file, default to ./proxy.pac",
 			Destination: &pacFile,
+		},
+		cli.StringFlag{
+			Name:        "shadowsocks-config, ssc",
+			Value:       "ss-config.json",
+			Usage:       "specify shadowsocks config, default to ./ss-config.json",
+			Destination: &ssConfigFile,
 		},
 		cli.IntFlag{
 			Name:        "timeout, t",
@@ -67,12 +77,25 @@ func main() {
 
 		conf := &socks5.Config{}
 		conf.Dial = func(socks5Addr string, timeout int) func(context.Context, string, string) (net.Conn, error) {
+			// socks5 forwarder
 			dialer, err := proxy.SOCKS5("tcp", socks5Addr, nil, proxy.Direct)
 			if err != nil {
 				panic(err)
 			}
+
+			// shadowsocks forwarder
+			exists, err := ss.IsFileExists(ssConfigFile)
+			if exists && err == nil {
+				config, err := ss.ParseConfig(ssConfigFile)
+				if err == nil {
+					shadowsocks.ParseServerConfig(config)
+					dialer = shadowsocks.Dialer
+				}
+			} else {
+				log.Info("shadowsocks config file not exists")
+			}
+
 			return func(ctx context.Context, network, addr string) (net.Conn, error) {
-				fmt.Println(addr)
 				host, _, _ := net.SplitHostPort(addr)
 				if net.ParseIP(host) == nil {
 					return dialer.Dial(network, addr)
@@ -101,12 +124,11 @@ func main() {
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
 
 		<-signalChannel
-		fmt.Println("hehe")
+		log.Info("dump cached rules to file...")
 		cache.DumpToWriter(f)
 		f.Close()
-
+		log.Info("gracefully exit")
 	}
 
 	app.Run(os.Args)
-
 }

@@ -40,7 +40,6 @@ func (this *PacParser) NeedProxy(host string, port int) bool {
 		defer this.Unlock()
 		v, _ := this.vm.Run(params)
 		result, _ := v.ToString()
-		fmt.Println(result)
 		b := result != "DIRECT" && result != "undefined"
 		cache.AddURL(url, b)
 		return b
