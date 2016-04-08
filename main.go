@@ -35,7 +35,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.3.0"
+	app.Version = "0.3.1"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",

@@ -28,7 +28,7 @@ func (this *PacParser) LoadPac(code string) {
 
 func (this *PacParser) NeedProxy(host string, port int) bool {
 	if this.vm == nil {
-		return true // for short out
+		return false // for short out
 	}
 
 	url := util.BuildURL(host, port)
