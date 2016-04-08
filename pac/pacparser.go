@@ -8,11 +8,7 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
-var Parser PacParser
-
-func init() {
-	Parser = PacParser{}
-}
+var Parser = PacParser{}
 
 type PacParser struct {
 	sync.RWMutex
@@ -44,6 +40,7 @@ func (this *PacParser) NeedProxy(host string, port int) bool {
 		defer this.Unlock()
 		v, _ := this.vm.Run(params)
 		result, _ := v.ToString()
+		fmt.Println(result)
 		b := result != "DIRECT" && result != "undefined"
 		cache.AddURL(url, b)
 		return b

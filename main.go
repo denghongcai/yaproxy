@@ -26,7 +26,7 @@ var pacFile string
 func main() {
 	flag.StringVar(&socks5Addr, "s", "127.0.0.1:1080", "specify socks5 server to use, default to 127.0.0.1:1080")
 	flag.StringVar(&listenAddr, "l", "127.0.0.1:10800", "specify listen address, default to 127.0.0.1:10800")
-	flag.IntVar(&timeout, "t", 2, "specify timeout value(unit: second), default to 3")
+	flag.IntVar(&timeout, "t", 3, "specify timeout value(unit: second), default to 3")
 	flag.StringVar(&pacFile, "pac", "proxy.pac", "specify pac file, default to proxy.pac")
 	flag.Parse()
 
@@ -47,8 +47,9 @@ func main() {
 			panic(err)
 		}
 		return func(ctx context.Context, network, addr string) (net.Conn, error) {
+			fmt.Println(addr)
 			host, _, _ := net.SplitHostPort(addr)
-			if net.ParseIP(host) != nil {
+			if net.ParseIP(host) == nil {
 				return dialer.Dial(network, addr)
 			}
 			target, err := net.DialTimeout(network, addr, time.Second*time.Duration(timeout))
