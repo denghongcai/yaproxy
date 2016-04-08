@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"gogs.digif.net/mask/modules/log"
+	"log"
 
 	"golang.org/x/net/context"
 	"golang.org/x/net/proxy"
@@ -92,7 +92,7 @@ func main() {
 					dialer = shadowsocks.Dialer
 				}
 			} else {
-				log.Info("shadowsocks config file not exists")
+				log.Println("shadowsocks config file not exists")
 			}
 
 			return func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -124,10 +124,10 @@ func main() {
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
 
 		<-signalChannel
-		log.Info("dump cached rules to file...")
+		log.Println("dump cached rules to file...")
 		cache.DumpToWriter(f)
 		f.Close()
-		log.Info("gracefully exit")
+		log.Println("gracefully exit")
 	}
 
 	app.Run(os.Args)
