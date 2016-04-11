@@ -24,6 +24,16 @@ import (
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
+const (
+	ATTACH_PARENT_PROCESS = ^uint32(0) // (DWORD)-1
+)
+
+var (
+	modkernel32 = syscall.NewLazyDLL("kernel32.dll")
+
+	procAttachConsole = modkernel32.NewProc("AttachConsole")
+)
+
 var socks5Addr string
 var listenAddr string
 var timeout int
@@ -32,11 +42,18 @@ var pacFile string
 var gfwListFile string
 var ssConfigFile string
 
+func AttachConsole(dwParentProcess uint32) (ok bool) {
+	r0, _, _ := syscall.Syscall(procAttachConsole.Addr(), 1, uintptr(dwParentProcess), 0, 0)
+	ok = bool(r0 != 0)
+	return
+}
+
 func main() {
+	AttachConsole(ATTACH_PARENT_PROCESS)
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.3.3"
+	app.Version = "0.3.4"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",

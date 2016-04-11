@@ -23,5 +23,6 @@ _testmain.go
 *.test
 ss-config.json
 yaproxy
+yaproxy.*
 cache.yap
 
