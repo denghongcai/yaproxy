@@ -24,6 +24,7 @@ import (
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
+var version string
 var socks5Addr string
 var listenAddr string
 var timeout int
@@ -36,7 +37,7 @@ func App() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.3.4"
+	app.Version = version
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",
