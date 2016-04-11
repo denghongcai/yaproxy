@@ -27,6 +27,7 @@ import (
 var socks5Addr string
 var listenAddr string
 var timeout int
+var logFile string
 var pacFile string
 var gfwListFile string
 var ssConfigFile string
@@ -35,7 +36,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "yaproxy"
 	app.Usage = "automatic proxy before your actual socks5 proxy"
-	app.Version = "0.3.2"
+	app.Version = "0.3.3"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "socks5, s",
@@ -48,6 +49,12 @@ func main() {
 			Value:       "127.0.0.1:10800",
 			Usage:       "specify listen address, default to 127.0.0.1:10800",
 			Destination: &listenAddr,
+		},
+		cli.StringFlag{
+			Name:        "log",
+			Value:       "yaproxy.log",
+			Usage:       "specify log file, default to ./yaproxy.log",
+			Destination: &logFile,
 		},
 		cli.StringFlag{
 			Name:        "pac, p",
@@ -75,6 +82,14 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
+
+		lf, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer lf.Close()
+		log.SetOutput(lf)
+
 		exists, err := ss.IsFileExists(pacFile)
 		if exists && err == nil {
 			pacCode, err := ioutil.ReadFile(pacFile)
@@ -94,6 +109,7 @@ func main() {
 		}
 
 		f, _ := os.OpenFile("cache.yap", os.O_RDWR|os.O_CREATE, 0644)
+		defer f.Close()
 		cache.RecoverFromReader(f)
 
 		conf := &socks5.Config{}
@@ -157,7 +173,6 @@ func main() {
 		<-signalChannel
 		log.Println("dump cached rules to file...")
 		cache.DumpToWriter(f)
-		f.Close()
 		log.Println("gracefully exit")
 	}
 
