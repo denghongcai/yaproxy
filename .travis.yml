@@ -13,8 +13,8 @@ script:
 - go vet ./...
 - go test -v ./...
 before_deploy:
-- gox -ldflags="-X main.version=${TRAVIS_TAG}" -output "dists/{{.OS}}_{{.Arch}}_{{.Dir}}"
-- gox -os="windows" -ldflags="-H windowsgui" -output "dists/{{.OS}}_{{.Arch}}_{{.Dir}}"
+- gox -ldflags="-X main.version=${TRAVIS_TAG} -s -w" -output "dists/{{.OS}}_{{.Arch}}_{{.Dir}}"
+- gox -os="windows" -ldflags="-X main.version=${TRAVIS_TAG} -H windowsgui -s -w" -output "dists/{{.OS}}_{{.Arch}}_{{.Dir}}"
 deploy:
   skip_cleanup: true
   provider: releases
