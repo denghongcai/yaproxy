@@ -32,7 +32,7 @@ to get help
 }
 ```
 
-### client side
+### server side
 
 ```
 {
