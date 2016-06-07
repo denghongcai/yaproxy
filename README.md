@@ -11,5 +11,19 @@ type
 ```
 yaproxy -h
 ```
+# ss-config Example
+```
+{
+    "server":"www.dhc.house",
+    "server_port":443,
+    "local_port":1080,
+    "password":"boom",
+    "method": "rc4-md5",
+    "timeout":600,
+    "suft": {
+        "bandwidth": 25
+    }
+}
+```
 
 to get help
