@@ -11,7 +11,13 @@ type
 ```
 yaproxy -h
 ```
+
+to get help
+
 # ss-config Example
+
+### client side
+
 ```
 {
     "server":"www.dhc.house",
@@ -26,4 +32,19 @@ yaproxy -h
 }
 ```
 
-to get help
+### client side
+
+```
+{
+    "server":"0.0.0.0",
+    "server_port":443,
+    "local_port":1080,
+    "password":"boom",
+    "method": "rc4-md5",
+    "timeout":600,
+    "suft": {
+        "local_addr": ":443",
+        "bandwidth": 25
+    }
+}
+```
