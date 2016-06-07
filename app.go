@@ -15,13 +15,13 @@ import (
 	"golang.org/x/net/proxy"
 
 	"github.com/codegangsta/cli"
+	ss "github.com/denghongcai/shadowsocks-go/shadowsocks"
 	"github.com/denghongcai/yaproxy/cache"
 	"github.com/denghongcai/yaproxy/gfwlist"
 	"github.com/denghongcai/yaproxy/pac"
 	"github.com/denghongcai/yaproxy/shadowsocks"
 	"github.com/denghongcai/yaproxy/socks5"
 	"github.com/denghongcai/yaproxy/util"
-	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
 var version string

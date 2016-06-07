@@ -1,12 +1,13 @@
 package shadowsocks
 
 import (
+	"github.com/spance/suft/protocol"
 	"log"
 	"math/rand"
 	"net"
 	"strconv"
 
-	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
+	ss "github.com/denghongcai/shadowsocks-go/shadowsocks"
 )
 
 type ServerCipher struct {
@@ -15,9 +16,9 @@ type ServerCipher struct {
 }
 
 var servers struct {
-	srvCipher []*ServerCipher
-	failCnt   []int // failed connection count
-
+	srvCipher       []*ServerCipher
+	failCnt         []int // failed connection count
+	srvSuftEndpoint []*suft.Endpoint
 }
 
 func ParseServerConfig(config *ss.Config) {
@@ -27,6 +28,16 @@ func ParseServerConfig(config *ss.Config) {
 			return false
 		}
 		return port != ""
+	}
+
+	suftParams := suft.Params{}
+
+	if len(config.SuftParams) != 0 {
+		suftParams = suft.Params{}
+		suftParams.FastRetransmit = true
+		suftParams.FlatTraffic = true
+		suftParams.Bandwidth = int64(config.SuftParams["bandwidth"].(float64))
+		log.Printf("enable suft protocol, bandwidth: %d\nMbps", suftParams.Bandwidth)
 	}
 
 	if len(config.ServerPassword) == 0 {
@@ -39,6 +50,7 @@ func ParseServerConfig(config *ss.Config) {
 		srvArr := config.GetServerArray()
 		n := len(srvArr)
 		servers.srvCipher = make([]*ServerCipher, n)
+		servers.srvSuftEndpoint = make([]*suft.Endpoint, n)
 
 		for i, s := range srvArr {
 			if hasPort(s) {
@@ -47,11 +59,14 @@ func ParseServerConfig(config *ss.Config) {
 			} else {
 				servers.srvCipher[i] = &ServerCipher{net.JoinHostPort(s, srvPort), cipher}
 			}
+			suftEndpoint, _ := suft.NewEndpoint(&suftParams)
+			servers.srvSuftEndpoint[i] = suftEndpoint
 		}
 	} else {
 		// multiple servers
 		n := len(config.ServerPassword)
 		servers.srvCipher = make([]*ServerCipher, n)
+		servers.srvSuftEndpoint = make([]*suft.Endpoint, n)
 
 		cipherCache := make(map[string]*ss.Cipher)
 		i := 0
@@ -78,6 +93,8 @@ func ParseServerConfig(config *ss.Config) {
 				cipherCache[passwd] = cipher
 			}
 			servers.srvCipher[i] = &ServerCipher{server, cipher}
+			suftEndpoint, _ := suft.NewEndpoint(&suftParams)
+			servers.srvSuftEndpoint[i] = suftEndpoint
 			i++
 		}
 	}
@@ -90,7 +107,7 @@ func ParseServerConfig(config *ss.Config) {
 
 func connectToServer(serverId int, addr string) (remote *ss.Conn, err error) {
 	se := servers.srvCipher[serverId]
-	remote, err = ss.Dial(addr, se.server, se.cipher.Copy())
+	remote, err = ss.Dial(addr, se.server, se.cipher.Copy(), servers.srvSuftEndpoint[serverId])
 	if err != nil {
 		log.Println("error connecting to shadowsocks server:", err)
 		const maxFailCnt = 30
