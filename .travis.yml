@@ -1,12 +1,12 @@
 language: go
 sudo: false
 go:
-- 1.6
 - tip
 env:
 - "PATH=/home/travis/gopath/bin:$PATH"
 before_install:
 - go get github.com/mitchellh/gox
+- go get github.com/getlantern/systray
 install:
 - go get -t ./...
 script:
