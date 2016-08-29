@@ -1,5 +1,10 @@
 language: go
 sudo: false
+addons:
+  apt:
+    sources:
+      - libgtk-3-dev
+      - libappindicator3-dev
 go:
 - tip
 env:
