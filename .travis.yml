@@ -2,7 +2,7 @@ language: go
 sudo: false
 addons:
   apt:
-    sources:
+    packages:
       - libgtk-3-dev
       - libappindicator3-dev
 go:
