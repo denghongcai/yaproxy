@@ -12,6 +12,7 @@ env:
 before_install:
 - go get github.com/mitchellh/gox
 - go get github.com/getlantern/systray
+- go get github.com/getlantern/filepersist
 install:
 - go get -t ./...
 script:
